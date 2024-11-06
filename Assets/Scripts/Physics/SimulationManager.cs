@@ -28,8 +28,8 @@ public class SimulationManager : MonoBehaviour {
     [Header("Rendering")]
     public float starRadiusMul = 2f;
     public float starRadiusExp = 0.5f;
-    public float luminosityScale = 0.01f;
-    public float luminosityTemperatureScale = 0.001f;
+    public float luminosityMul = 0.01f;
+    public float luminosityExp = 0.001f;
     
     public Bounds renderBounds;
     public Mesh renderMesh;
@@ -45,6 +45,7 @@ public class SimulationManager : MonoBehaviour {
         radiusMulId = Shader.PropertyToID("_RadiusMul"),
         radiusExpId = Shader.PropertyToID("_RadiusExp"),
         luminMulId = Shader.PropertyToID("_LuminMul"),
+        luminExpId = Shader.PropertyToID("_LuminExp"),
         datBufId = Shader.PropertyToID("_Data"),
         outBufId = Shader.PropertyToID("_Out");
 
@@ -92,7 +93,7 @@ public class SimulationManager : MonoBehaviour {
                 bodies[i].temperature *= Random.Range(1f - genTemperatureVariability, 1f + genTemperatureVariability);
                 bodies[i].radius = genReferenceRadius * Mathf.Pow(bodies[i].mass / genReferenceMass, 0.8f);
                 bodies[i].radius *= Random.Range(1f - genRadiusVariability, 1f + genRadiusVariability);
-                bodies[i].luminosity = Mathf.Pow(bodies[i].radius, 2f) * Mathf.Pow(bodies[i].temperature * luminosityTemperatureScale, 4f);
+                bodies[i].luminosity = Mathf.Pow(bodies[i].radius, 2f) * Mathf.Pow(bodies[i].temperature, 4f);
             }
 
             System.Array.Sort(bodies, (a, b) =>
@@ -159,7 +160,8 @@ public class SimulationManager : MonoBehaviour {
 
         physicsComputeShader.SetFloat(radiusMulId, starRadiusMul);
         physicsComputeShader.SetFloat(radiusExpId, starRadiusExp);
-        physicsComputeShader.SetFloat(luminMulId, luminosityScale);
+        physicsComputeShader.SetFloat(luminMulId, luminosityMul);
+        physicsComputeShader.SetFloat(luminExpId, luminosityExp);
 
         physicsComputeShader.Dispatch(applyGravKernelId, groupCount, 1, 1);
         physicsComputeShader.Dispatch(moveStepKernelId, groupCount, 1, 1);

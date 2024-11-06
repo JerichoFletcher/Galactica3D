@@ -33,7 +33,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BodyTexture:
-        m_Texture: {fileID: 2800000, guid: 242e0ccd3b999f3488dc28f3989d60e5, type: 3}
+        m_Texture: {fileID: 2800000, guid: 1c64a896657545a4184fdf01bf7a903e, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _SampleTexture2D_f1f1b5e3b7a040eebdf95c9433309896_Texture_1_Texture2D:
@@ -67,7 +67,7 @@ Material:
     - _DoubleSidedGIMode: 0
     - _DoubleSidedNormalMode: 2
     - _DstBlend: 10
-    - _EmissionMultiplier: 0.002
+    - _EmissionMultiplier: 0.004
     - _EmissionPower: 3
     - _EnableBlendModePreserveSpecularLighting: 0
     - _EnableFogOnTransparent: 1
@@ -88,7 +88,7 @@ Material:
     - _StencilWriteMaskDistortionVec: 4
     - _StencilWriteMaskMV: 43
     - _SurfaceType: 1
-    - _TemperatureMultiplier: 0.75
+    - _TemperatureMultiplier: 1
     - _TransparentBackfaceEnable: 0
     - _TransparentCullMode: 2
     - _TransparentDepthPostpassEnable: 0

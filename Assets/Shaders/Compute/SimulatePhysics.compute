@@ -23,6 +23,7 @@ float _GConst;
 float _RadiusMul;
 float _RadiusExp;
 float _LuminMul;
+float _LuminExp;
 
 RWStructuredBuffer<BodyData> _Data;
 RWStructuredBuffer<float3> _Out;
@@ -76,6 +77,6 @@ void MoveStep(uint3 id : SV_DispatchThreadID) {
         
         // Compute additional properties
         _Data[id.x].apparentRadius = _RadiusMul * pow(abs(_Data[id.x].radius), _RadiusExp);
-        _Data[id.x].apparentLuminosity = _LuminMul * _Data[id.x].luminosity;
+        _Data[id.x].apparentLuminosity = _LuminMul * pow(abs(_Data[id.x].luminosity), _LuminExp);
     }
 }

@@ -174,7 +174,7 @@ MonoBehaviour:
   generateCount: 55000
   generateDepthScale: {x: 1, y: 0.05, z: 1}
   generateRadius: 2500
-  generateMaxVelOffset: 0
+  generateMaxVelOffset: 0.2
   generateGCMass: 800000000
   genMassRange: {x: 1, y: 1000}
   genReferenceMass: 2.5
@@ -183,87 +183,6 @@ MonoBehaviour:
   genTemperatureVariability: 0.05
   genReferenceRadius: 0.1
   genRadiusVariability: 0.1
-  generateMass:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 1000
-      inSlope: 633422
-      outSlope: 633422
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.1176928
-    - serializedVersion: 3
-      time: 0.74346095
-      value: 122420.71
-      inSlope: 236191.62
-      outSlope: 236191.62
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.62643754
-    - serializedVersion: 3
-      time: 1
-      value: 500000
-      inSlope: 1848200.4
-      outSlope: 1848200.4
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.18764926
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  generateTemperature:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 3000
-      inSlope: 43951.145
-      outSlope: 43951.145
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.07083333
-    - serializedVersion: 3
-      time: 1
-      value: 30000
-      inSlope: 88906.04
-      outSlope: 88906.04
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.21666664
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  generateLuminosity:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 2
-      inSlope: 599.00946
-      outSlope: 599.00946
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.33333334
-      outWeight: 0.5
-    - serializedVersion: 3
-      time: 1
-      value: 1000
-      inSlope: 3502.415
-      outSlope: 3502.415
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0.0625
-      outWeight: 0.33333334
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
   generateRadiusRemap:
     serializedVersion: 2
     m_Curve:
@@ -297,17 +216,17 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  gConstant: 5e-10
-  starRadiusMul: 2
-  starRadiusExp: 0.2
-  luminosityScale: 0.0000001
-  luminosityTemperatureScale: 0.001
-  initialBodies: []
+  gConstant: 0.00000007
+  starRadiusMul: 0.25
+  starRadiusExp: 0.25
+  luminosityMul: 50
+  luminosityExp: 0.09
   renderBounds:
     m_Center: {x: 0, y: 0, z: 0}
     m_Extent: {x: 6000, y: 3000, z: 6000}
   renderMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   renderMaterial: {fileID: 2100000, guid: cf7b30936ce272849b9e760a7b74f750, type: 2}
+  initialBodies: []
 --- !u!114 &97066829
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -722,7 +641,7 @@ ReflectionProbe:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 97066826}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 2
   m_Type: 0
   m_Mode: 2

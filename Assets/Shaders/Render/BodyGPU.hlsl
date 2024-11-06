@@ -16,7 +16,7 @@ StructuredBuffer<BodyData> _Data;
 
 void ConfigureProcedural() {
 #if defined(UNITY_PROCEDURAL_INSTANCING_ENABLED)
-    #define unity_ObjectToWorld unity_ObjectToWorld
+#define unity_ObjectToWorld unity_ObjectToWorld
     
     BodyData dat = _Data[unity_InstanceID];
     
