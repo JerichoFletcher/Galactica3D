@@ -2,6 +2,7 @@
 #pragma kernel MoveStep
 
 #define BLOCK_SIZE 256
+#define PI 3.14159265359
 #define SOFTENING_FACTOR_2 0.00001
 
 struct BodyData {
@@ -19,6 +20,8 @@ struct BodyData {
 uint _Size;
 float _Delta;
 float _GConst;
+float _DarkMatterCentralDensity;
+float _DarkMatterScaleRadius;
 
 float _RadiusMul;
 float _RadiusExp;
@@ -27,6 +30,23 @@ float _LuminExp;
 
 RWStructuredBuffer<BodyData> _Data;
 RWStructuredBuffer<float3> _Out;
+
+float3 ApplyDarkMatterGravity(float4 to, float3 currV) {
+    // Distance vector between the point to the galactic center
+    float3 disp = -to.xyz;
+    float r = length(disp);
+    
+    // Add a tiny value to the magnitude to prevent 0/0 when the body is at origin
+    float distSqr = dot(disp, disp) + SOFTENING_FACTOR_2;
+    
+    // Compute the enclosed mass of dark matter
+    float m = 4.0 * PI * _DarkMatterCentralDensity * _DarkMatterScaleRadius * _DarkMatterScaleRadius * _DarkMatterScaleRadius
+        * (log(1 + r / _DarkMatterScaleRadius) - (r / (r + _DarkMatterScaleRadius)));
+
+    // Compute acceleration using the Newtonian gravitational force formula
+    float3 dv = _Delta * _GConst * m * disp / sqrt(distSqr * distSqr * distSqr);
+    return currV + dv;
+}
 
 float3 ApplyGravitySinglePair(float4 from, float4 to, float3 currV) {
     // Distance vector between the pair pointing towards the target body
@@ -60,6 +80,9 @@ void ApplyGravity(uint3 id : SV_DispatchThreadID) {
         for (uint i = 0; i < _Size; i += BLOCK_SIZE) {
             currV = ApplyGravityOnBlock(ref, currV, i / BLOCK_SIZE);
         }
+        
+        // Apply acceleration due to dark matter
+        currV = ApplyDarkMatterGravity(ref, currV);
         
         // Store resultant velocity in the output buffer
         _Out[id.x] = currV;

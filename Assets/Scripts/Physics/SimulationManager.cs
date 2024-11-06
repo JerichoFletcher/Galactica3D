@@ -24,13 +24,15 @@ public class SimulationManager : MonoBehaviour {
 
     [Header("Simulation Parameters")]
     public float gConstant = 100f;
+    public float darkMatterCentralDensity;
+    public float darkMatterScaleRadius;
 
     [Header("Rendering")]
     public float starRadiusMul = 2f;
     public float starRadiusExp = 0.5f;
     public float luminosityMul = 0.01f;
     public float luminosityExp = 0.001f;
-    
+
     public Bounds renderBounds;
     public Mesh renderMesh;
     public Material renderMaterial;
@@ -46,6 +48,8 @@ public class SimulationManager : MonoBehaviour {
         radiusExpId = Shader.PropertyToID("_RadiusExp"),
         luminMulId = Shader.PropertyToID("_LuminMul"),
         luminExpId = Shader.PropertyToID("_LuminExp"),
+        darkMatterCentralDensityId = Shader.PropertyToID("_DarkMatterCentralDensity"),
+        darkMatterScaleRadiusId = Shader.PropertyToID("_DarkMatterScaleRadius"),
         datBufId = Shader.PropertyToID("_Data"),
         outBufId = Shader.PropertyToID("_Out");
 
@@ -54,6 +58,8 @@ public class SimulationManager : MonoBehaviour {
     private int applyGravKernelId, moveStepKernelId;
     private uint thdGroupSize;
     private BodyData[] bodies;
+
+    public SimulationManager Instance { get; private set; }
 
     private void InitializeBodyArray() {
         if(initialBodies.Length == 0) {
@@ -105,7 +111,9 @@ public class SimulationManager : MonoBehaviour {
             int[] histogram = new int[10];
             for(int i = 1; i < bodies.Length; i++) {
                 Vector3 rv = Vector3.Cross(Vector3.up, bodies[i].position).normalized;
-                bodies[i].velocity += Mathf.Sqrt(gConstant * totalMass / bodies[i].position.magnitude) * rv;
+                Vector3 accel = GCAcceleration(bodies[i].position, totalMass) + DarkMatterAcceleration(bodies[i].position);
+
+                bodies[i].velocity += Mathf.Sqrt(accel.magnitude * bodies[i].position.magnitude) * rv;
 
                 totalMass += bodies[i].mass;
                 totalStellarMass += bodies[i].mass;
@@ -157,6 +165,8 @@ public class SimulationManager : MonoBehaviour {
         physicsComputeShader.SetInt(sizeId, bodies.Length);
         physicsComputeShader.SetFloat(deltaId, Time.deltaTime);
         physicsComputeShader.SetFloat(gConstId, gConstant);
+        physicsComputeShader.SetFloat(darkMatterCentralDensityId, darkMatterCentralDensity);
+        physicsComputeShader.SetFloat(darkMatterScaleRadiusId, darkMatterScaleRadius);
 
         physicsComputeShader.SetFloat(radiusMulId, starRadiusMul);
         physicsComputeShader.SetFloat(radiusExpId, starRadiusExp);
@@ -179,7 +189,29 @@ public class SimulationManager : MonoBehaviour {
         );
     }
 
+    private Vector3 GCAcceleration(Vector3 position, float enclosedMass) {
+        float r = position.magnitude;
+        return enclosedMass * gConstant / (r * r) * -position.normalized;
+    }
+
+    private Vector3 DarkMatterAcceleration(Vector3 position) {
+        if(position == Vector3.zero || darkMatterCentralDensity == 0f || darkMatterScaleRadius == 0f) {
+            return Vector3.zero;
+        }
+
+        float r = position.magnitude;
+        float enclosedMass = 4f * Mathf.PI * darkMatterCentralDensity * darkMatterScaleRadius * darkMatterScaleRadius * darkMatterScaleRadius
+            * (Mathf.Log(1 + r / darkMatterScaleRadius) - (r / (r + darkMatterScaleRadius)));
+
+        return enclosedMass * gConstant / (r * r) * -position.normalized;
+    }
+
     private void Awake() {
+        if(Instance != null) {
+            Destroy(this);
+        }
+        Instance = this;
+
         InitializeBodyArray();
     }
 
