@@ -5,33 +5,42 @@ public class SimulationManager : MonoBehaviour {
     public ComputeShader physicsComputeShader;
     public ReflectionProbe reflectionProbe;
 
-    [Header("Generation Parameters")]
-    public int generateCount = 1_000;
+    [Header("Galaxy Generation Parameters")]
+    [Min(0)] public int generateCount = 1_000;
     public Vector3 generateDepthScale = new(1f, 0.2f, 1f);
     [Range(0f, 100_000f)] public float generateRadius = 1_500f;
     [Range(0f, 100f)] public float generateMaxVelOffset = 30f;
     [Range(0f, 1_000_000_000f)] public float generateGCMass = 800_000_000f;
 
+    [Header("Star Generation Parameters")]
     public Vector2 genMassRange = new(1_000f, 500_000f);
-    public float genReferenceMass = 10_000f;
-    public float genMassIntegrateStep = 1f;
-    public float genReferenceTemperature = 5778f;
+    [Min(0f)] public float genReferenceMass = 10_000f;
+    [Min(0f)] public float genMassIntegrateStep = 1f;
+    [Min(0f)] public float genReferenceTemperature = 5778f;
     [Range(0f, 1f)] public float genTemperatureVariability = 0.05f;
-    public float genReferenceRadius = 0.05f;
+    [Min(0f)] public float genReferenceRadius = 0.05f;
     [Range(0f, 1f)] public float genRadiusVariability = 0.05f;
-
     public AnimationCurve generateRadiusRemap;
 
+    [Header("Spiral Arm Generation Parameters")]
+    [Min(0)] public int genArmCount = 2;
+    [Min(0f)] public float genSpiralStartRadius = 30f;
+    [Min(0f)] public float genSpiralLooseness = 0.3f;
+    [Range(0f, 1f)] public float genSpiralBias = 0.5f;
+    [Min(0f)] public float genSpiralRadiusScatter = 8f;
+    [Range(0f, 360f)] public float genSpiralAngularScatter = 15f;
+    [Min(1f)] public float genSpiralCoreSmoothing = 10f;
+
     [Header("Simulation Parameters")]
-    public float gConstant = 100f;
-    public float darkMatterCentralDensity;
-    public float darkMatterScaleRadius;
+    [Min(0f)] public float gConstant = 100f;
+    [Min(0f)] public float darkMatterCentralDensity;
+    [Min(0f)] public float darkMatterScaleRadius;
 
     [Header("Rendering")]
-    public float starRadiusMul = 2f;
-    public float starRadiusExp = 0.5f;
-    public float luminosityMul = 0.01f;
-    public float luminosityExp = 0.001f;
+    [Min(0f)] public float starRadiusMul = 2f;
+    [Min(0f)] public float starRadiusExp = 0.5f;
+    [Min(0f)] public float luminosityMul = 0.01f;
+    [Min(0f)] public float luminosityExp = 0.001f;
 
     public Bounds renderBounds;
     public Mesh renderMesh;
@@ -74,6 +83,8 @@ public class SimulationManager : MonoBehaviour {
             );
 
             bodies = new BodyData[generateCount];
+            float maxArmAngle = Mathf.Log(generateRadius / genSpiralStartRadius) / genSpiralLooseness;
+
             for(int i = 0; i < bodies.Length; i++) {
                 if(i == 0) {
                     bodies[0].position = transform.position;
@@ -86,12 +97,29 @@ public class SimulationManager : MonoBehaviour {
                     continue;
                 }
 
-                Vector3 v = Random.insideUnitSphere;
-                v *= generateRadius * generateRadiusRemap.Evaluate(v.magnitude);
-                v.x *= generateDepthScale.x;
-                v.y *= generateDepthScale.y;
-                v.z *= generateDepthScale.z;
-                bodies[i].position = transform.position + v;
+                Vector3 genPos = Random.insideUnitSphere;
+                genPos *= generateRadius * generateRadiusRemap.Evaluate(genPos.magnitude);
+
+                if(genArmCount > 0) {
+                    float armOffset = Random.Range(0f, maxArmAngle);
+                    float radius = genSpiralStartRadius * Mathf.Exp(armOffset * genSpiralLooseness);
+                    armOffset += Random.Range(-genSpiralAngularScatter, genSpiralAngularScatter) * Mathf.Deg2Rad;
+
+                    float armAngle = 2f * Mathf.PI * (i % genArmCount) / genArmCount;
+                    float coreSmoothing = 2f * Mathfs.Sigmoid(genSpiralCoreSmoothing * armOffset) - 1f;
+
+                    Vector3 u = radius * coreSmoothing * new Vector3(Mathf.Cos(armOffset), 0f, Mathf.Sin(armOffset));
+                    u = Quaternion.Euler(0f, armAngle * Mathf.Rad2Deg, 0f) * u + genSpiralRadiusScatter * Random.insideUnitSphere;
+
+                    genPos.x = Mathf.Lerp(genPos.x, u.x, genSpiralBias);
+                    genPos.z = Mathf.Lerp(genPos.z, u.z, genSpiralBias);
+                }
+
+                genPos.x *= generateDepthScale.x;
+                genPos.y *= generateDepthScale.y;
+                genPos.z *= generateDepthScale.z;
+
+                bodies[i].position = genPos;
                 bodies[i].velocity = generateMaxVelOffset * Random.insideUnitSphere;
 
                 bodies[i].mass = Mathf.Lerp(genMassRange.x, genMassRange.y, massSampler.Sample(Random.value));

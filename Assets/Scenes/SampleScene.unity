@@ -172,9 +172,9 @@ MonoBehaviour:
     type: 3}
   reflectionProbe: {fileID: 97066830}
   generateCount: 55000
-  generateDepthScale: {x: 1, y: 0.05, z: 1}
-  generateRadius: 2500
-  generateMaxVelOffset: 0.2
+  generateDepthScale: {x: 1, y: 0.1, z: 1}
+  generateRadius: 500
+  generateMaxVelOffset: 0.5
   generateGCMass: 800000000
   genMassRange: {x: 1, y: 1000}
   genReferenceMass: 2.5
@@ -188,7 +188,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.01
+      value: 0.001
       inSlope: 0.025863646
       outSlope: 0.025863646
       tangentMode: 0
@@ -198,12 +198,12 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0.5868096
       value: 0.10054812
-      inSlope: 0.32624778
-      outSlope: 0.32624778
+      inSlope: 0.42176315
+      outSlope: 0.42176315
       tangentMode: 0
       weightedMode: 0
       inWeight: 0.33333334
-      outWeight: 0.36639416
+      outWeight: 0.36469972
     - serializedVersion: 3
       time: 1
       value: 1
@@ -216,16 +216,23 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  gConstant: 0.00000007
-  darkMatterCentralDensity: 250
-  darkMatterScaleRadius: 1500
+  genArmCount: 2
+  genSpiralStartRadius: 20
+  genSpiralLooseness: 0.4
+  genSpiralBias: 0.5
+  genSpiralRadiusScatter: 10
+  genSpiralAngularScatter: 10
+  genSpiralCoreSmoothing: 10
+  gConstant: 0.00000008
+  darkMatterCentralDensity: 500
+  darkMatterScaleRadius: 450
   starRadiusMul: 0.25
   starRadiusExp: 0.25
   luminosityMul: 50
   luminosityExp: 0.09
   renderBounds:
     m_Center: {x: 0, y: 0, z: 0}
-    m_Extent: {x: 6000, y: 3000, z: 6000}
+    m_Extent: {x: 1000, y: 1000, z: 1000}
   renderMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   renderMaterial: {fileID: 2100000, guid: cf7b30936ce272849b9e760a7b74f750, type: 2}
   initialBodies: []
