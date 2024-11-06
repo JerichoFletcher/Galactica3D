@@ -1,0 +1,81 @@
+#pragma kernel ApplyGravity
+#pragma kernel MoveStep
+
+#define BLOCK_SIZE 256
+#define SOFTENING_FACTOR_2 0.00001
+
+struct BodyData {
+    float3 position;
+    float mass;
+    float3 velocity;
+    float radius;
+    float temperature;
+    float luminosity;
+    
+    float apparentRadius;
+    float apparentLuminosity;
+};
+
+uint _Size;
+float _Delta;
+float _GConst;
+
+float _RadiusMul;
+float _RadiusExp;
+float _LuminMul;
+
+RWStructuredBuffer<BodyData> _Data;
+RWStructuredBuffer<float3> _Out;
+
+float3 ApplyGravitySinglePair(float4 from, float4 to, float3 currV) {
+    // Distance vector between the pair pointing towards the target body
+    float3 disp = from.xyz - to.xyz;
+    
+    // Add a tiny value to the magnitude to prevent 0/0 when the two bodies are equivalent
+    float distSqr = dot(disp, disp) + SOFTENING_FACTOR_2;
+    
+    // Compute acceleration using the Newtonian gravitational force formula
+    float3 dv = _Delta * _GConst * from.w * disp / sqrt(distSqr * distSqr * distSqr);
+    return currV + dv;
+}
+
+float3 ApplyGravityOnBlock(float4 ref, float3 currV, uint p) {
+    // Compute total acceleration applied to the reference body in this group
+    for (uint i = p * BLOCK_SIZE; i < (p + 1) * BLOCK_SIZE; i++) {
+        float4 dat = float4(_Data[i].position, _Data[i].mass);
+        currV = ApplyGravitySinglePair(dat, ref, currV);
+    }
+    return currV;
+}
+
+[numthreads(BLOCK_SIZE, 1, 1)]
+void ApplyGravity(uint3 id : SV_DispatchThreadID) {
+    if (id.x != 0 && id.x < _Size) {
+        // Retrieve the reference body
+        float3 currV = _Data[id.x].velocity;
+        float4 ref = float4(_Data[id.x].position, _Data[id.x].mass);
+        
+        // Apply groupwise acceleration to the reference body
+        for (uint i = 0; i < _Size; i += BLOCK_SIZE) {
+            currV = ApplyGravityOnBlock(ref, currV, i / BLOCK_SIZE);
+        }
+        
+        // Store resultant velocity in the output buffer
+        _Out[id.x] = currV;
+    }
+}
+
+[numthreads(BLOCK_SIZE, 1, 1)]
+void MoveStep(uint3 id : SV_DispatchThreadID) {
+    if (id.x != 0 && id.x < _Size) {
+        // Retrieve the velocity data from the first kernel
+        _Data[id.x].velocity = _Out[id.x];
+        
+        // Apply velocity as position change to this body
+        _Data[id.x].position += _Delta * _Data[id.x].velocity;
+        
+        // Compute additional properties
+        _Data[id.x].apparentRadius = _RadiusMul * pow(abs(_Data[id.x].radius), _RadiusExp);
+        _Data[id.x].apparentLuminosity = _LuminMul * _Data[id.x].luminosity;
+    }
+}
